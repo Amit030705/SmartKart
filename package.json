@@ -1,0 +1,16 @@
+{
+  "name": "smartcart-monorepo",
+  "version": "1.0.0",
+  "description": "SmartCart — Smart Electronics E-Commerce and Recommendation Platform",
+  "private": true,
+  "scripts": {
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "test": "npm test --prefix server",
+    "build": "npm run build --prefix client"
+  },
+  "keywords": ["ecommerce", "electronics", "recommendation-engine", "mern"],
+  "author": "SmartCart Team",
+  "license": "ISC"
+}
