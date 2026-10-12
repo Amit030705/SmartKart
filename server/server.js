@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { pathToFileURL } from 'node:url';
 import { ENV } from './src/config/env.js';
 import { connectDB } from './src/config/db.js';
 import { notFound, errorHandler } from './src/middleware/errorHandler.js';
@@ -105,7 +106,7 @@ const startServer = async () => {
 
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
-        console.error(`⚠️ Port ${ENV.PORT} is currently in use. Stale process stopped or please choose another port in .env.`);
+        console.error(`Port ${ENV.PORT} is already in use. Stop the existing listener or choose another port in .env.`);
       } else {
         console.error(`[Server Error]`, err);
       }
@@ -118,7 +119,10 @@ const startServer = async () => {
   }
 };
 
-if (process.env.NODE_ENV !== 'test') {
+const isDirectExecution = process.argv[1]
+  && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectExecution && process.env.NODE_ENV !== 'test') {
   startServer();
 }
 

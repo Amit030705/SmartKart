@@ -1,10 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+const mongoUri = process.env.MONGODB_URI?.trim() || 'mongodb://localhost:27017/smartcart';
+
 export const ENV = {
   PORT: process.env.PORT || 5000,
   NODE_ENV: process.env.NODE_ENV || 'development',
-  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/smartcart',
+  MONGODB_URI: mongoUri,
+  MONGODB_URI_IS_REMOTE: !/^mongodb:\/\/(localhost|127\.0\.0\.1|\[::1\])(?=[:/?]|$)/i.test(mongoUri),
+  MONGODB_DNS_SERVERS: (process.env.MONGODB_DNS_SERVERS || '')
+    .split(',')
+    .map((server) => server.trim())
+    .filter(Boolean),
   USE_MEMORY_DB: process.env.USE_MEMORY_DB || 'auto',
   JWT_SECRET: process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'development_only_change_me'),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
