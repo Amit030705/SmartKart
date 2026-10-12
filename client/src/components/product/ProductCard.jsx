@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Heart, ArrowLeftRight, Check, Sparkles } from 'lucide-react';
+import { ShoppingCart, Heart, ArrowLeftRight, Check } from 'lucide-react';
 import { formatCurrency, formatCategoryName } from '../../utils/formatters';
 import StarRating from '../common/StarRating';
 import { useCart } from '../../context/CartContext';
@@ -11,157 +11,60 @@ export default function ProductCard({ product, showMatchBadge = false, matchScor
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { isInCompare, addToCompare, removeFromCompare } = useCompare();
-
   const inWishlist = isInWishlist(product._id);
   const inCompare = isInCompare(product._id);
-
-  // Extract top 2 key specs for quick card preview
-  const getQuickSpecs = () => {
-    const s = product.specs || {};
-    const specs = [];
-    if (s.ram) specs.push(`${s.ram}GB RAM`);
-    if (s.storage) specs.push(`${s.storage >= 1024 ? `${s.storage/1024}TB` : `${s.storage}GB`}`);
-    if (s.refreshRate) specs.push(`${s.refreshRate}Hz`);
-    if (s.batteryLife) specs.push(`${s.batteryLife}h Battery`);
-    if (s.anc) specs.push('ANC');
-    if (s.displaySize) specs.push(`${s.displaySize}"`);
-    return specs.slice(0, 3);
-  };
-
-  const quickSpecs = getQuickSpecs();
+  const specs = product.specs || {};
+  const quickSpecs = [
+    specs.ram && `${specs.ram}GB RAM`,
+    specs.storage && `${specs.storage >= 1024 ? `${specs.storage / 1024}TB` : `${specs.storage}GB`} storage`,
+    specs.displaySize && `${specs.displaySize}" display`,
+    specs.refreshRate && `${specs.refreshRate}Hz`,
+    specs.anc && 'Noise cancelling',
+  ].filter(Boolean).slice(0, 3);
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-slate-200/80 hover:border-sky-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden">
-      {/* Top Badges */}
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-        {showMatchBadge && matchScore !== null && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500 text-white shadow-md shadow-sky-500/20">
-            <Sparkles className="w-3 h-3" />
-            {matchScore}% Match
-          </span>
-        )}
-        {product.stock <= 5 && product.stock > 0 && (
-          <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            Only {product.stock} left
-          </span>
-        )}
-      </div>
-
-      {/* Action Buttons Overlay */}
-      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            inWishlist ? removeFromWishlist(product._id) : addToWishlist(product._id);
-          }}
-          className={`p-2 rounded-full backdrop-blur-md transition-all shadow-sm ${
-            inWishlist
-              ? 'bg-rose-50 text-rose-500 hover:bg-rose-100'
-              : 'bg-white/80 text-slate-500 hover:text-rose-500 hover:bg-white'
-          }`}
-          title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-        >
-          <Heart className={`w-4 h-4 ${inWishlist ? 'fill-rose-500' : ''}`} />
-        </button>
-
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            inCompare ? removeFromCompare(product._id) : addToCompare(product);
-          }}
-          className={`p-2 rounded-full backdrop-blur-md transition-all shadow-sm ${
-            inCompare
-              ? 'bg-sky-500 text-white hover:bg-sky-600'
-              : 'bg-white/80 text-slate-500 hover:text-sky-600 hover:bg-white'
-          }`}
-          title={inCompare ? 'Remove from comparison' : 'Add to comparison'}
-        >
-          {inCompare ? <Check className="w-4 h-4" /> : <ArrowLeftRight className="w-4 h-4" />}
-        </button>
-      </div>
-
-      {/* Product Image */}
-      <Link
-        to={`/product/${product.slug || product._id}`}
-        className="relative pt-[75%] overflow-hidden bg-slate-50 block"
-      >
-        <img
-          src={product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80'}
-          alt={product.name}
-          className="absolute inset-0 w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
+    <article className="flex min-w-0 flex-col border border-[#e3e5df] bg-white">
+      <Link to={`/product/${product.slug || product._id}`} className="relative flex aspect-[4/3] items-center justify-center bg-[#f7f7f4] p-5">
+        <img src={product.images?.[0]} alt={product.name} className="h-full w-full object-contain" loading="lazy" />
+        {showMatchBadge && matchScore !== null && <span className="absolute bottom-2 left-2 bg-white/95 px-2 py-1 text-xs font-medium text-[#315740]">{matchScore}% match</span>}
       </Link>
 
-      {/* Content */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-            <span className="font-semibold text-sky-600 tracking-wider uppercase text-[10px]">
-              {product.brand}
-            </span>
-            <span>{formatCategoryName(product.category)}</span>
-          </div>
-
-          <Link
-            to={`/product/${product.slug || product._id}`}
-            className="block text-sm font-semibold text-slate-800 hover:text-sky-600 line-clamp-2 transition-colors mb-2"
-          >
-            {product.name}
-          </Link>
-
-          <div className="mb-2.5">
-            <StarRating rating={product.rating} reviewCount={product.reviewCount} size="xs" />
-          </div>
-
-          {/* Spec Badges */}
-          {quickSpecs.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {quickSpecs.map((spec, i) => (
-                <span
-                  key={i}
-                  className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] rounded-md font-medium"
-                >
-                  {spec}
-                </span>
-              ))}
-            </div>
-          )}
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <div className="flex items-center justify-between gap-2 text-[11px] text-[#737a73]">
+          <span className="font-medium text-[#52705d]">{product.brand}</span>
+          <span>{formatCategoryName(product.category)}</span>
         </div>
+        <Link to={`/product/${product.slug || product._id}`} className="mt-1.5 line-clamp-2 min-h-10 text-sm font-medium leading-5 text-[#252d27] hover:text-[#315740]">
+          {product.name}
+        </Link>
+        {product.reviewCount > 0 ? (
+          <div className="mt-2"><StarRating rating={product.rating} reviewCount={product.reviewCount} size="xs" /></div>
+        ) : (
+          <p className="mt-2 text-xs text-[#81877f]">No reviews yet</p>
+        )}
+        {quickSpecs.length > 0 && <p className="mt-3 min-h-8 text-xs leading-5 text-[#626a63]">{quickSpecs.join(' · ')}</p>}
 
-        {/* Pricing & Add to Cart */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
-          <div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold text-slate-900">
-                {formatCurrency(product.price)}
-              </span>
-            </div>
-            <span className="text-[10px] text-slate-500">Catalog price</span>
-            {product.observedPrice && product.priceVerifiedAt && (
-              <a href={product.priceUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-sky-700 underline">
-                {formatCurrency(product.observedPrice)} at {product.priceSource} · checked {new Date(product.priceVerifiedAt).toLocaleDateString('en-IN')}
-              </a>
-            )}
+        <div className="mt-auto border-t border-[#eceee9] pt-3">
+          <p className="text-lg font-semibold text-[#202722]">{formatCurrency(product.price)}</p>
+          <p className="text-[11px] text-[#81877f]">Catalog price</p>
+          {product.observedPrice && product.priceVerifiedAt && product.priceUrl && (
+            <a href={product.priceUrl} target="_blank" rel="noreferrer" className="mt-1 block text-[11px] leading-4 text-[#315740] underline underline-offset-2">
+              {formatCurrency(product.observedPrice)} at {product.priceSource}, checked {new Date(product.priceVerifiedAt).toLocaleDateString('en-IN')}
+            </a>
+          )}
+          <div className="mt-3 flex items-center gap-2">
+            <button type="button" disabled={product.stock === 0} onClick={() => addToCart(product, 1)} className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-[#315740] px-3 py-2 text-xs font-medium text-white hover:bg-[#264633] disabled:cursor-not-allowed disabled:bg-[#d9ded9] disabled:text-[#727972]">
+              <ShoppingCart className="h-4 w-4" /> {product.stock === 0 ? 'Out of stock' : 'Add to cart'}
+            </button>
+            <button type="button" aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'} title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => inWishlist ? removeFromWishlist(product._id) : addToWishlist(product._id)} className={`rounded-md border p-2 ${inWishlist ? 'border-[#315740] text-[#315740]' : 'border-[#dfe3dc] text-[#626a63] hover:bg-[#f7f8f5]'}`}>
+              <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
+            </button>
+            <button type="button" aria-label={inCompare ? 'Remove from comparison' : 'Add to comparison'} title={inCompare ? 'Remove from comparison' : 'Add to comparison'} onClick={() => inCompare ? removeFromCompare(product._id) : addToCompare(product)} className={`rounded-md border p-2 ${inCompare ? 'border-[#315740] text-[#315740]' : 'border-[#dfe3dc] text-[#626a63] hover:bg-[#f7f8f5]'}`}>
+              {inCompare ? <Check className="h-4 w-4" /> : <ArrowLeftRight className="h-4 w-4" />}
+            </button>
           </div>
-
-          <button
-            type="button"
-            disabled={product.stock === 0}
-            onClick={() => addToCart(product, 1)}
-            className={`p-2.5 rounded-xl transition-all flex items-center justify-center ${
-              product.stock === 0
-                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                : 'bg-slate-900 text-white hover:bg-sky-600 shadow-sm active:scale-95'
-            }`}
-            title={product.stock === 0 ? 'Out of stock' : 'Add to cart'}
-          >
-            <ShoppingCart className="w-4 h-4" />
-          </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
